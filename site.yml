@@ -91,8 +91,4 @@
   become: true
   tasks:
 
-  - name: install samba package
-    tags: samba
-    package:
-      name: samba
-      state: latest
+  
