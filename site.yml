@@ -34,7 +34,6 @@
       owner: root
       group: root
 
-
 - hosts: web_servers
   become: true
   tasks:
@@ -50,6 +49,31 @@
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
  
+  - name: start apache2 (Ubuntu)
+    tags: apache,centos,httpd
+    service: 
+      name: apache2
+      state: started
+      enabled: yes
+    when: ansible_distribution == "Ubuntu"  
+
+
+  - name: change e-mail address for admin 
+    tags: apache,centos,httpd
+    lineinfile: 
+      path: /etc/apache2/apache2.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin somebody@somewhere.net
+    when: ansible_distribution == "Ubuntu"
+    register: apache2
+
+  - name: restart apache2 (Ubuntu)
+    tags: apache,centos,httpd
+    service:
+      name: apache2
+      state: restarted
+    when: apache2.changed
+
   - name: install apache and php for CentOS servers
     tags: apache,centos,httpd
     dnf:
@@ -58,6 +82,13 @@
         - php 
       state: latest
     when: ansible_distribution == "CentOS"
+
+  - name: start httpd (CentOS)
+    tags: apache,centos,httpd
+    service: 
+      name: httpd
+      state: started
+    when: ansible_distribution == "CentOS"  
 
   - name: copy default html file for site
     tags: apache,apache2,httpd
@@ -78,13 +109,6 @@
       name: mariadb
       state: latest
     when: ansible_distribution == "CentOS"
-  
-  - name: install mariadb package (Ubuntu)
-    tags: db,mariadb,ubuntu
-    apt:
-      name: mariadb
-      state: latest
-    when: ansible_distribution == "Ubuntu"
 
   
 - hosts: file_servers
